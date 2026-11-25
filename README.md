@@ -1,10 +1,15 @@
+markdown
 # ROB RUN — Scalable Anti-Cheat Architecture (PoC)
 
 A lightweight, server-authoritative anti-cheat proof-of-concept designed for high-density, Free-to-Play extraction & open-world multiplayer servers (5,000+ concurrent players) like **ROB RUN**.
 
+## 📦 Repository Contents
+* **`RobRunAntiCheatValidator.cs` (C# / Unity):** Production-oriented server implementation utilizing Unity's `Vector3` and `Mathf.DeltaAngle` along with value-type `structs` to minimize Garbage Collection (GC) overhead on high-tick servers.
+* **`robrun_anticheat_poc.py` (Python 3):** Standalone, zero-dependency simulation script demonstrating legit vs. cheater telemetry evaluation.
+
 ## 🎯 Problem Statement
 High-concurrency F2P games with weekly wipe economies face three major security bottlenecks:
-1. **CPU Overhead at Scale:** Running heavy physics and combat validation on every single server tick for 5,000 players degrades server tick rates.
+1. **CPU & GC Overhead at Scale:** Running heavy physics and combat validation on every single server tick for 5,000 players degrades server tick rates.
 2. **High-Latency False Positives:** Global player bases experience network jitter; overly strict movement checks unfairly penalize legitimate players.
 3. **Disposable Accounts:** Instant account creation renders traditional account bans ineffective without behavioral isolation and delayed enforcement.
 
@@ -12,14 +17,14 @@ High-concurrency F2P games with weekly wipe economies face three major security 
 
 This prototype demonstrates a low-overhead validation pipeline built around four core principles:
 
-* **Adaptive Tick Auditing (`Trust Score`):** Clean players are audited via randomized batch sampling to save CPU cycles. If anomalous behavior lowers a player's `trust_score`, the server dynamically switches them to per-tick high-frequency auditing.
-* **Latency-Buffered Physics Validation:** Detects speedhacks and teleportation by comparing displacement over delta time (`dt`), incorporating a configurable latency buffer to prevent false positives caused by packet loss or ping spikes.
+* **Adaptive Tick Auditing (`TrustScore`):** Clean players are audited via randomized batch sampling to save CPU cycles. If anomalous behavior lowers a player's `TrustScore`, the server dynamically switches them to per-tick high-frequency auditing (`IncreaseAuditFrequency`).
+* **Latency-Buffered Physics Validation:** Detects speedhacks and teleportation by comparing displacement over delta time (`dt`), incorporating a configurable latency buffer (`1.20x`) to prevent false positives caused by packet loss or ping spikes.
 * **Combat & Camera Heuristics:** Tracks angular camera velocity (`deg/s`) to flag inhuman aimbot snaps, alongside reaction-time profiling (`ms`) to identify triggerbots.
-* **Shadow Pools & Delayed Bans:** Instead of kicking cheaters immediately (which helps cheat developers reverse-engineer detection thresholds), flagged accounts are routed to isolated matchmaking pools (`SHADOW_POOL_OR_DELAYED_BAN`) for ban waves.
+* **Shadow Pools & Delayed Bans:** Instead of kicking cheaters immediately (which helps cheat developers reverse-engineer detection thresholds), flagged accounts are routed to isolated matchmaking pools (`ShadowPoolOrDelayedBan`) for ban waves.
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Python Simulation)
 
-No external dependencies are required (uses Python 3 standard library).
+No external dependencies are required to run the standalone simulation:
 
 ```bash
 git clone https://github.com
